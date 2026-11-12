@@ -31,6 +31,8 @@ jobs:
         with:
           path: ~/.cache/huggingface
           key: seslen-0.3.1-model
+      - name: ffmpeg kur
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - run: pip install -r requirements.txt
       - name: Seslendir
         run: python uret.py
