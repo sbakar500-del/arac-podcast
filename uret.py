@@ -150,9 +150,11 @@ def main():
         w.setframerate(ORAN)
         w.writeframes(pcm.tobytes())
     # Araba hoparlörü için: hafif sıkıştırma, ses düzeyi eşitleme, 44.1 kHz mono 64 kbps MP3.
+    # Ahmet sesi baslı ve boğuk geliyor; basları kısıp konuşma netliğini (3 kHz) ve tizleri açıyoruz.
+    netlik = "equalizer=f=220:t=q:w=0.9:g=-5,equalizer=f=3200:t=q:w=0.8:g=5,highshelf=f=6000:g=4," if MOTOR == "edge" else ""
     subprocess.run(
         ["ffmpeg", "-y", "-loglevel", "error", "-i", "cikti/ham.wav",
-         "-af", "highpass=f=70,acompressor=threshold=-18dB:ratio=2.5:attack=8:release=160,loudnorm=I=-16:TP=-1.5:LRA=9",
+         "-af", f"highpass=f={95 if netlik else 70},acompressor=threshold=-18dB:ratio=2.5:attack=8:release=160,{netlik}loudnorm=I=-16:TP=-1.5:LRA=9",
          "-ar", "44100", "-ac", "1", "-b:a", "64k", "cikti/bolum.mp3"],
         check=True,
     )
