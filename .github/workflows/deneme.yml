@@ -10,23 +10,6 @@ permissions:
   contents: write
 
 jobs:
-  edge:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install edge-tts==7.3.1
-      - run: python deneme/edge_dene.py
-      - name: Örnekleri dala kaydet
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f ornekler/
-          git commit -q -m "Ses örnekleri (${{ github.job }})"
-          for i in 1 2 3 4 5; do git pull -q --rebase origin ses-denemesi && git push -q origin HEAD:ses-denemesi && break; sleep 5; done
   xtts:
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -37,7 +20,7 @@ jobs:
           python-version: "3.11"
       - run: |
           pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-          pip install "coqui-tts[codec]"
+          pip install "coqui-tts[codec]" six
       - run: python deneme/xtts_dene.py
       - name: Örnekleri dala kaydet
         run: |
