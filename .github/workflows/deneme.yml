@@ -1,13 +1,13 @@
 name: Ses denemesi
 
-# Yalnızca ses-denemesi dalında çalışır; yayına dokunmaz. Örnekleri iş çıktısı (artifact) olarak bırakır.
+# Yalnızca ses-denemesi dalında çalışır; yayına dokunmaz. Örnekleri bu dala (ornekler/) kaydeder.
 on:
   push:
     branches: [ses-denemesi]
     paths: ["deneme/**", ".github/workflows/deneme.yml"]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   edge:
@@ -20,10 +20,13 @@ jobs:
           python-version: "3.12"
       - run: pip install edge-tts==7.3.1
       - run: python deneme/edge_dene.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: edge-ornekleri
-          path: ornekler/
+      - name: Örnekleri dala kaydet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ornekler/
+          git commit -q -m "Ses örnekleri (${{ github.job }})"
+          for i in 1 2 3 4 5; do git pull -q --rebase origin ses-denemesi && git push -q origin HEAD:ses-denemesi && break; sleep 5; done
   xtts:
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -36,7 +39,10 @@ jobs:
           pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
           pip install "coqui-tts[codec]"
       - run: python deneme/xtts_dene.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: xtts-ornekleri
-          path: ornekler/
+      - name: Örnekleri dala kaydet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ornekler/
+          git commit -q -m "Ses örnekleri (${{ github.job }})"
+          for i in 1 2 3 4 5; do git pull -q --rebase origin ses-denemesi && git push -q origin HEAD:ses-denemesi && break; sleep 5; done
