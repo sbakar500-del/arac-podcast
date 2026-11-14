@@ -10,22 +10,24 @@ permissions:
   contents: write
 
 jobs:
-  xtts:
+  gemini:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-      - run: |
-          pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-          pip install "coqui-tts[codec]" six
-      - run: python deneme/xtts_dene.py
+          python-version: "3.12"
+      - name: Gemini sesleriyle oku
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python deneme/gemini_dene.py 2>&1 | tee ornekler-gunluk.txt
       - name: Örnekleri dala kaydet
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p ornekler && mv ornekler-gunluk.txt ornekler/gemini-gunluk.txt
           git add -f ornekler/
           git commit -q -m "Ses örnekleri (${{ github.job }})"
           for i in 1 2 3 4 5; do git pull -q --rebase origin ses-denemesi && git push -q origin HEAD:ses-denemesi && break; sleep 5; done
