@@ -34,7 +34,7 @@ jobs:
           python-version: "3.11"
       - run: |
           pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
-          pip install coqui-tts
+          pip install "coqui-tts[codec]"
       - run: python deneme/xtts_dene.py
       - uses: actions/upload-artifact@v4
         with:
