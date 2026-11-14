@@ -3,7 +3,7 @@ name: Günlük podcast
 # metinler/ klasörüne yeni bir metin gelince çalışır: metni seslendirir ve "yayin" sürümüne yükler.
 on:
   push:
-    paths: ["metinler/**", "uret.py", "requirements.txt"]
+    paths: ["metinler/**", "uret.py", "requirements.txt", ".github/workflows/podcast.yml"]
   workflow_dispatch:
 
 permissions:
@@ -17,31 +17,45 @@ jobs:
   uret:
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    env:
-      SES: hasan
-      USLUP: haber
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-      - name: Ses modelini önbellekten al
+      - name: ffmpeg kur
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: pip install -r requirements.txt
+      - name: Seslendir (Ahmet, ana dili Türkçe)
+        id: ahmet
+        continue-on-error: true
+        env:
+          MOTOR: edge
+          SES: tr-TR-AhmetNeural
+          HIZ: "-5%"
+        run: python uret.py
+      # Edge ses hizmeti o sabah yanıt vermezse bölüm yine çıksın: eski çevrimdışı sesle üret.
+      - name: Yedek ses modelini önbellekten al
+        if: steps.ahmet.outcome == 'failure'
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
           key: seslen-0.3.1-model
-      - name: ffmpeg kur
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-      - run: pip install -r requirements.txt
-      - name: Seslendir
-        run: python uret.py
+      - name: Yedek sesle seslendir (Seslen, hasan)
+        if: steps.ahmet.outcome == 'failure'
+        env:
+          MOTOR: seslen
+          SES: hasan
+          USLUP: haber
+        run: |
+          pip install "seslen-tts[hepsi]==0.3.1"
+          python uret.py
       - name: Yayımla
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view yayin >/dev/null 2>&1 || gh release create yayin --title "Günlük bölüm" \
-            --notes "Araç launcher'ının indirdiği günlük haber bölümü. Metin ve ses yapay zekâ ile üretilmiştir. Ses modeli: Seslen (CC BY-SA 4.0)."
+            --notes "Araç launcher'ının indirdiği günlük haber bölümü. Metin ve ses yapay zekâ ile üretilmiştir."
           # Önce ses, sonra bilgi dosyası: launcher yeni tarihi gördüğünde ses hazır olsun.
           gh release upload yayin cikti/bolum.mp3 --clobber
           gh release upload yayin cikti/bolum.json --clobber
