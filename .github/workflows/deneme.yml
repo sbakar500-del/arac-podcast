@@ -1,0 +1,42 @@
+name: Ses denemesi
+
+# Yalnızca ses-denemesi dalında çalışır; yayına dokunmaz. Örnekleri iş çıktısı (artifact) olarak bırakır.
+on:
+  push:
+    branches: [ses-denemesi]
+    paths: ["deneme/**", ".github/workflows/deneme.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  edge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install edge-tts==7.3.1
+      - run: python deneme/edge_dene.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: edge-ornekleri
+          path: ornekler/
+  xtts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: |
+          pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install coqui-tts
+      - run: python deneme/xtts_dene.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xtts-ornekleri
+          path: ornekler/
