@@ -4,7 +4,7 @@ os.environ["COQUI_TOS_AGREED"] = "1"
 from TTS.api import TTS
 
 metin = re.sub(r"\s*\n\s*\n\s*", " ", open("deneme/ornek.txt", encoding="utf-8").read()).strip()
-tts = TTS("tts_models/multilingual/multilingual-v2/xtts_v2")
+tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
 print("konuşmacılar:", tts.speakers)
 os.makedirs("ornekler", exist_ok=True)
 for kisi in ["Damien Black", "Aaron Dreschner", "Viktor Eka"]:
